@@ -60,7 +60,7 @@ export function VideoSection() {
               </Button>
             </Link>
           </div>
-          
+
           <div className="content-grid">
             {videos.map((video) => (
               <Card
