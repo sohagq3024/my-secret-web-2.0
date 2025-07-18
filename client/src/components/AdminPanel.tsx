@@ -3,12 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import { 
   BarChart3, 
@@ -33,22 +28,25 @@ import {
   Star,
   Album,
   Save,
-  AlertCircle
+  AlertCircle,
+  Shield,
+  Database,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { MembershipRequest, Celebrity, Album as AlbumType, Video as VideoType, SlideshowImage } from "@shared/schema";
+import { MembershipRequest, Celebrity, Album as AlbumType, Video as VideoType, SlideshowImage, Profile } from "@shared/schema";
+import { ProfileManagement } from "./ProfileManagement";
+import { AlbumManagement } from "./AlbumManagement";
 
 export function AdminPanel() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [formData, setFormData] = useState<any>({});
+  const [isProfileManagementOpen, setIsProfileManagementOpen] = useState(false);
+  const [isAlbumManagementOpen, setIsAlbumManagementOpen] = useState(false);
 
   // Data queries
   const { data: membershipRequests = [], isLoading: requestsLoading } = useQuery<(MembershipRequest & { user: any })[]>({
@@ -69,6 +67,10 @@ export function AdminPanel() {
 
   const { data: slideshowImages = [], isLoading: slideshowLoading } = useQuery<SlideshowImage[]>({
     queryKey: ["/api/slideshow"],
+  });
+
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery<Profile[]>({
+    queryKey: ["/api/profiles"],
   });
 
   // Status update mutation
@@ -247,6 +249,18 @@ export function AdminPanel() {
               >
                 <Image className="w-5 h-5 mr-3" />
                 Slideshow
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveTab("profiles")}
+                className={`admin-nav-item w-full ${
+                  activeTab === "profiles" ? "active" : ""
+                }`}
+              >
+                <Users className="w-5 h-5 mr-3" />
+                Profiles
               </motion.button>
               
               <motion.button
@@ -1107,6 +1121,20 @@ export function AdminPanel() {
                     </motion.div>
                   ))}
                 </div>
+              </motion.div>
+            )}
+
+            {/* Profile Management */}
+            {activeTab === "profiles" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <ProfileManagement 
+                  isOpen={activeTab === "profiles"} 
+                  onOpenChange={() => {}}
+                />
               </motion.div>
             )}
 

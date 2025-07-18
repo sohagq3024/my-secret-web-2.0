@@ -1,7 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertMembershipRequestSchema } from "@shared/schema";
+import { 
+  insertUserSchema, 
+  loginSchema, 
+  insertMembershipRequestSchema, 
+  insertProfileSchema, 
+  insertAlbumSchema, 
+  insertVideoSchema,
+  insertAlbumImageSchema 
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -210,6 +218,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(video);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch video" });
+    }
+  });
+
+  // Profile routes
+  app.get("/api/profiles", async (req, res) => {
+    try {
+      const profiles = await storage.getProfiles();
+      res.json(profiles);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profiles" });
+    }
+  });
+
+  app.get("/api/profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const profile = await storage.getProfileById(id);
+      if (!profile) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.post("/api/profiles", async (req, res) => {
+    try {
+      const profileData = insertProfileSchema.parse(req.body);
+      const profile = await storage.createProfile(profileData);
+      res.json(profile);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const profileData = insertProfileSchema.partial().parse(req.body);
+      await storage.updateProfile(id, profileData);
+      res.json({ message: "Profile updated successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.delete("/api/profiles/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteProfile(id);
+      res.json({ message: "Profile deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete profile" });
+    }
+  });
+
+  // Album images routes
+  app.get("/api/albums/:id/images", async (req, res) => {
+    try {
+      const albumId = parseInt(req.params.id);
+      const images = await storage.getAlbumImages(albumId);
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch album images" });
+    }
+  });
+
+  app.post("/api/albums/:id/images", async (req, res) => {
+    try {
+      const albumId = parseInt(req.params.id);
+      const imageData = insertAlbumImageSchema.parse({
+        ...req.body,
+        albumId
+      });
+      const image = await storage.createAlbumImage(imageData);
+      res.json(image);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/albums/images/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const imageData = insertAlbumImageSchema.partial().parse(req.body);
+      await storage.updateAlbumImage(id, imageData);
+      res.json({ message: "Album image updated successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.delete("/api/albums/images/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAlbumImage(id);
+      res.json({ message: "Album image deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete album image" });
+    }
+  });
+
+  // Enhanced album routes
+  app.post("/api/albums", async (req, res) => {
+    try {
+      const albumData = insertAlbumSchema.parse(req.body);
+      const album = await storage.createAlbum(albumData);
+      res.json(album);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/albums/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const albumData = insertAlbumSchema.partial().parse(req.body);
+      await storage.updateAlbum(id, albumData);
+      res.json({ message: "Album updated successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.delete("/api/albums/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteAlbum(id);
+      res.json({ message: "Album deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete album" });
+    }
+  });
+
+  // Enhanced video routes
+  app.post("/api/videos", async (req, res) => {
+    try {
+      const videoData = insertVideoSchema.parse(req.body);
+      const video = await storage.createVideo(videoData);
+      res.json(video);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.put("/api/videos/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const videoData = insertVideoSchema.partial().parse(req.body);
+      await storage.updateVideo(id, videoData);
+      res.json({ message: "Video updated successfully" });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid request data" });
+    }
+  });
+
+  app.delete("/api/videos/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVideo(id);
+      res.json({ message: "Video deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete video" });
     }
   });
 

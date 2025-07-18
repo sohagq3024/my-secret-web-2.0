@@ -3,7 +3,9 @@ import {
   membershipRequests, 
   activeMemberships, 
   celebrities, 
+  profiles,
   albums, 
+  albumImages,
   videos, 
   slideshowImages,
   type User, 
@@ -13,8 +15,12 @@ import {
   type ActiveMembership,
   type Celebrity,
   type InsertCelebrity,
+  type Profile,
+  type InsertProfile,
   type Album,
   type InsertAlbum,
+  type AlbumImage,
+  type InsertAlbumImage,
   type Video,
   type InsertVideo,
   type SlideshowImage,
@@ -40,7 +46,14 @@ export interface IStorage {
   getActiveMembershipByUserId(userId: number): Promise<ActiveMembership | undefined>;
   createActiveMembership(membership: { userId: number; plan: string; expiresAt: Date }): Promise<ActiveMembership>;
   
-  // Celebrity operations
+  // Profile operations
+  getProfiles(): Promise<Profile[]>;
+  getProfileById(id: number): Promise<Profile | undefined>;
+  createProfile(profile: InsertProfile): Promise<Profile>;
+  updateProfile(id: number, profile: Partial<InsertProfile>): Promise<void>;
+  deleteProfile(id: number): Promise<void>;
+  
+  // Celebrity operations (keeping for backward compatibility)
   getCelebrities(): Promise<Celebrity[]>;
   getCelebrityById(id: number): Promise<Celebrity | undefined>;
   createCelebrity(celebrity: InsertCelebrity): Promise<Celebrity>;
@@ -49,17 +62,31 @@ export interface IStorage {
   getAlbums(): Promise<Album[]>;
   getFeaturedAlbums(): Promise<Album[]>;
   getAlbumById(id: number): Promise<Album | undefined>;
+  getAlbumsByProfileId(profileId: number): Promise<Album[]>;
   createAlbum(album: InsertAlbum): Promise<Album>;
+  updateAlbum(id: number, album: Partial<InsertAlbum>): Promise<void>;
+  deleteAlbum(id: number): Promise<void>;
+  
+  // Album images operations
+  getAlbumImages(albumId: number): Promise<AlbumImage[]>;
+  createAlbumImage(image: InsertAlbumImage): Promise<AlbumImage>;
+  updateAlbumImage(id: number, image: Partial<InsertAlbumImage>): Promise<void>;
+  deleteAlbumImage(id: number): Promise<void>;
   
   // Video operations
   getVideos(): Promise<Video[]>;
   getFeaturedVideos(): Promise<Video[]>;
   getVideoById(id: number): Promise<Video | undefined>;
+  getVideosByProfileId(profileId: number): Promise<Video[]>;
   createVideo(video: InsertVideo): Promise<Video>;
+  updateVideo(id: number, video: Partial<InsertVideo>): Promise<void>;
+  deleteVideo(id: number): Promise<void>;
   
   // Slideshow operations
   getSlideshowImages(): Promise<SlideshowImage[]>;
   createSlideshowImage(image: InsertSlideshowImage): Promise<SlideshowImage>;
+  updateSlideshowImage(id: number, image: Partial<InsertSlideshowImage>): Promise<void>;
+  deleteSlideshowImage(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -306,7 +333,30 @@ export class DatabaseStorage implements IStorage {
     return activeMembership;
   }
 
-  // Celebrity operations
+  // Profile operations
+  async getProfiles(): Promise<Profile[]> {
+    return await db.select().from(profiles);
+  }
+
+  async getProfileById(id: number): Promise<Profile | undefined> {
+    const [profile] = await db.select().from(profiles).where(eq(profiles.id, id));
+    return profile || undefined;
+  }
+
+  async createProfile(insertProfile: InsertProfile): Promise<Profile> {
+    const [profile] = await db.insert(profiles).values(insertProfile).returning();
+    return profile;
+  }
+
+  async updateProfile(id: number, updateData: Partial<InsertProfile>): Promise<void> {
+    await db.update(profiles).set(updateData).where(eq(profiles.id, id));
+  }
+
+  async deleteProfile(id: number): Promise<void> {
+    await db.delete(profiles).where(eq(profiles.id, id));
+  }
+
+  // Celebrity operations (keeping for backward compatibility)
   async getCelebrities(): Promise<Celebrity[]> {
     return await db.select().from(celebrities);
   }
@@ -335,9 +385,43 @@ export class DatabaseStorage implements IStorage {
     return album || undefined;
   }
 
+  async getAlbumsByProfileId(profileId: number): Promise<Album[]> {
+    return await db.select().from(albums).where(eq(albums.profileId, profileId));
+  }
+
   async createAlbum(insertAlbum: InsertAlbum): Promise<Album> {
     const [album] = await db.insert(albums).values(insertAlbum).returning();
     return album;
+  }
+
+  async updateAlbum(id: number, updateData: Partial<InsertAlbum>): Promise<void> {
+    await db.update(albums).set(updateData).where(eq(albums.id, id));
+  }
+
+  async deleteAlbum(id: number): Promise<void> {
+    // Also delete associated album images
+    await db.delete(albumImages).where(eq(albumImages.albumId, id));
+    await db.delete(albums).where(eq(albums.id, id));
+  }
+
+  // Album images operations
+  async getAlbumImages(albumId: number): Promise<AlbumImage[]> {
+    return await db.select().from(albumImages)
+      .where(eq(albumImages.albumId, albumId))
+      .orderBy(albumImages.order);
+  }
+
+  async createAlbumImage(insertImage: InsertAlbumImage): Promise<AlbumImage> {
+    const [image] = await db.insert(albumImages).values(insertImage).returning();
+    return image;
+  }
+
+  async updateAlbumImage(id: number, updateData: Partial<InsertAlbumImage>): Promise<void> {
+    await db.update(albumImages).set(updateData).where(eq(albumImages.id, id));
+  }
+
+  async deleteAlbumImage(id: number): Promise<void> {
+    await db.delete(albumImages).where(eq(albumImages.id, id));
   }
 
   // Video operations
@@ -354,9 +438,21 @@ export class DatabaseStorage implements IStorage {
     return video || undefined;
   }
 
+  async getVideosByProfileId(profileId: number): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.profileId, profileId));
+  }
+
   async createVideo(insertVideo: InsertVideo): Promise<Video> {
     const [video] = await db.insert(videos).values(insertVideo).returning();
     return video;
+  }
+
+  async updateVideo(id: number, updateData: Partial<InsertVideo>): Promise<void> {
+    await db.update(videos).set(updateData).where(eq(videos.id, id));
+  }
+
+  async deleteVideo(id: number): Promise<void> {
+    await db.delete(videos).where(eq(videos.id, id));
   }
 
   // Slideshow operations
@@ -369,6 +465,14 @@ export class DatabaseStorage implements IStorage {
   async createSlideshowImage(insertImage: InsertSlideshowImage): Promise<SlideshowImage> {
     const [image] = await db.insert(slideshowImages).values(insertImage).returning();
     return image;
+  }
+
+  async updateSlideshowImage(id: number, updateData: Partial<InsertSlideshowImage>): Promise<void> {
+    await db.update(slideshowImages).set(updateData).where(eq(slideshowImages.id, id));
+  }
+
+  async deleteSlideshowImage(id: number): Promise<void> {
+    await db.delete(slideshowImages).where(eq(slideshowImages.id, id));
   }
 }
 

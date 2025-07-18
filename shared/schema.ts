@@ -37,13 +37,16 @@ export const activeMemberships = pgTable("active_memberships", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Celebrities table
-export const celebrities = pgTable("celebrities", {
+// Profiles table (renamed from celebrities to be more comprehensive)
+export const profiles = pgTable("profiles", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   profession: text("profession").notNull(),
   imageUrl: text("image_url").notNull(),
   description: text("description"),
+  dateOfBirth: text("date_of_birth"),
+  gender: text("gender"),
+  nationality: text("nationality"),
   isFree: boolean("is_free").default(false),
   price: decimal("price", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
@@ -54,10 +57,22 @@ export const albums = pgTable("albums", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  imageUrl: text("image_url").notNull(),
+  thumbnailUrl: text("thumbnail_url").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  priceCategory: text("price_category").notNull(), // "free", "bdt_150", "bdt_250", "bdt_500", "usd_2", "usd_3", "usd_5"
   imageCount: integer("image_count").default(0),
   isFeatured: boolean("is_featured").default(false),
+  profileId: integer("profile_id").references(() => profiles.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Album images table
+export const albumImages = pgTable("album_images", {
+  id: serial("id").primaryKey(),
+  albumId: integer("album_id").references(() => albums.id).notNull(),
+  imageUrl: text("image_url").notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -69,8 +84,10 @@ export const videos = pgTable("videos", {
   thumbnailUrl: text("thumbnail_url").notNull(),
   videoUrl: text("video_url").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  priceCategory: text("price_category").notNull(), // "free", "bdt_150", "bdt_250", "bdt_500", "usd_2", "usd_3", "usd_5"
   duration: text("duration"),
   isFeatured: boolean("is_featured").default(false),
+  profileId: integer("profile_id").references(() => profiles.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -82,6 +99,18 @@ export const slideshowImages = pgTable("slideshow_images", {
   subtitle: text("subtitle"),
   order: integer("order").notNull(),
   isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Keep celebrities table for backward compatibility
+export const celebrities = pgTable("celebrities", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  profession: text("profession").notNull(),
+  imageUrl: text("image_url").notNull(),
+  description: text("description"),
+  isFree: boolean("is_free").default(false),
+  price: decimal("price", { precision: 10, scale: 2 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -99,12 +128,22 @@ export const insertMembershipRequestSchema = createInsertSchema(membershipReques
   status: true,
 });
 
+export const insertProfileSchema = createInsertSchema(profiles).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertCelebritySchema = createInsertSchema(celebrities).omit({
   id: true,
   createdAt: true,
 });
 
 export const insertAlbumSchema = createInsertSchema(albums).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAlbumImageSchema = createInsertSchema(albumImages).omit({
   id: true,
   createdAt: true,
 });
@@ -131,10 +170,14 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type MembershipRequest = typeof membershipRequests.$inferSelect;
 export type InsertMembershipRequest = z.infer<typeof insertMembershipRequestSchema>;
 export type ActiveMembership = typeof activeMemberships.$inferSelect;
+export type Profile = typeof profiles.$inferSelect;
+export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Celebrity = typeof celebrities.$inferSelect;
 export type InsertCelebrity = z.infer<typeof insertCelebritySchema>;
 export type Album = typeof albums.$inferSelect;
 export type InsertAlbum = z.infer<typeof insertAlbumSchema>;
+export type AlbumImage = typeof albumImages.$inferSelect;
+export type InsertAlbumImage = z.infer<typeof insertAlbumImageSchema>;
 export type Video = typeof videos.$inferSelect;
 export type InsertVideo = z.infer<typeof insertVideoSchema>;
 export type SlideshowImage = typeof slideshowImages.$inferSelect;
