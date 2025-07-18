@@ -723,3 +723,5 @@ export function EnhancedAlbumManagement({ isOpen, onOpenChange }: EnhancedAlbumM
     </Dialog>
   );
 }
+
+export default EnhancedAlbumManagement;

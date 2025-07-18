@@ -25,7 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Album, InsertAlbum, AlbumImage, InsertAlbumImage, Profile } from "@shared/schema";
-import { FileUploadResult, priceCategories, getPriceLabelFromCategory } from "@/lib/fileUpload";
+import { UploadedFile, priceCategories, getPriceLabelFromCategory } from "@/lib/fileUpload";
 
 interface AlbumManagementProps {
   isOpen: boolean;
@@ -40,8 +40,8 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isContentDialogOpen, setIsContentDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<InsertAlbum>>({});
-  const [thumbnailFiles, setThumbnailFiles] = useState<FileUploadResult[]>([]);
-  const [albumImages, setAlbumImages] = useState<FileUploadResult[]>([]);
+  const [thumbnailFiles, setThumbnailFiles] = useState<UploadedFile[]>([]);
+  const [albumImages, setAlbumImages] = useState<UploadedFile[]>([]);
 
   // Fetch albums
   const { data: albums = [], isLoading } = useQuery<Album[]>({
@@ -161,14 +161,14 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
     setSelectedAlbum(null);
   };
 
-  const handleThumbnailUpload = (files: FileUploadResult[]) => {
+  const handleThumbnailUpload = (files: UploadedFile[]) => {
     setThumbnailFiles(files);
     if (files.length > 0) {
       setFormData(prev => ({ ...prev, thumbnailUrl: files[0].url }));
     }
   };
 
-  const handleAlbumImagesUpload = (files: FileUploadResult[]) => {
+  const handleAlbumImagesUpload = (files: UploadedFile[]) => {
     setAlbumImages(prev => [...prev, ...files]);
   };
 
@@ -376,8 +376,6 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
                 <FileUpload
                   accept="image"
                   onUpload={handleThumbnailUpload}
-                  currentFiles={thumbnailFiles}
-                  onRemove={() => setThumbnailFiles([])}
                   maxFiles={1}
                 />
               </div>
@@ -483,8 +481,6 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
                 <FileUpload
                   accept="image"
                   onUpload={handleThumbnailUpload}
-                  currentFiles={thumbnailFiles}
-                  onRemove={() => setThumbnailFiles([])}
                   maxFiles={1}
                 />
               </div>
@@ -564,8 +560,6 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
                   accept="image"
                   multiple
                   onUpload={handleAlbumImagesUpload}
-                  currentFiles={albumImages}
-                  onRemove={handleRemoveAlbumImage}
                   maxFiles={6}
                 />
               </div>
@@ -619,3 +613,5 @@ export function AlbumManagement({ isOpen, onOpenChange }: AlbumManagementProps) 
     </Card>
   );
 }
+
+export default AlbumManagement;

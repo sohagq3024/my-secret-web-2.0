@@ -590,3 +590,5 @@ export function EnhancedVideoManagement({ isOpen, onOpenChange }: EnhancedVideoM
     </Dialog>
   );
 }
+
+export default EnhancedVideoManagement;

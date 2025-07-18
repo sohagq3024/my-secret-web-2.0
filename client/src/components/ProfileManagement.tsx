@@ -23,7 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Profile, InsertProfile } from "@shared/schema";
-import { FileUploadResult } from "@/lib/fileUpload";
+import { UploadedFile } from "@/lib/fileUpload";
 
 interface ProfileManagementProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export function ProfileManagement({ isOpen, onOpenChange }: ProfileManagementPro
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<InsertProfile>>({});
-  const [uploadedFiles, setUploadedFiles] = useState<FileUploadResult[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
 
   // Fetch profiles
   const { data: profiles = [], isLoading } = useQuery<Profile[]>({
@@ -121,7 +121,7 @@ export function ProfileManagement({ isOpen, onOpenChange }: ProfileManagementPro
     setSelectedProfile(null);
   };
 
-  const handleFileUpload = (files: FileUploadResult[]) => {
+  const handleFileUpload = (files: UploadedFile[]) => {
     setUploadedFiles(files);
     if (files.length > 0) {
       setFormData(prev => ({ ...prev, imageUrl: files[0].url }));
@@ -307,8 +307,6 @@ export function ProfileManagement({ isOpen, onOpenChange }: ProfileManagementPro
                 <FileUpload
                   accept="image"
                   onUpload={handleFileUpload}
-                  currentFiles={uploadedFiles}
-                  onRemove={handleRemoveFile}
                   maxFiles={1}
                 />
               </div>
@@ -438,8 +436,6 @@ export function ProfileManagement({ isOpen, onOpenChange }: ProfileManagementPro
                 <FileUpload
                   accept="image"
                   onUpload={handleFileUpload}
-                  currentFiles={uploadedFiles}
-                  onRemove={handleRemoveFile}
                   maxFiles={1}
                 />
               </div>
@@ -536,3 +532,5 @@ export function ProfileManagement({ isOpen, onOpenChange }: ProfileManagementPro
     </Card>
   );
 }
+
+export default ProfileManagement;
