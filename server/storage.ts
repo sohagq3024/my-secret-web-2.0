@@ -20,6 +20,8 @@ import {
   type SlideshowImage,
   type InsertSlideshowImage,
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -60,259 +62,212 @@ export interface IStorage {
   createSlideshowImage(image: InsertSlideshowImage): Promise<SlideshowImage>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private membershipRequests: Map<number, MembershipRequest>;
-  private activeMemberships: Map<number, ActiveMembership>;
-  private celebrities: Map<number, Celebrity>;
-  private albums: Map<number, Album>;
-  private videos: Map<number, Video>;
-  private slideshowImages: Map<number, SlideshowImage>;
-  private currentUserId: number;
-  private currentRequestId: number;
-  private currentMembershipId: number;
-  private currentCelebrityId: number;
-  private currentAlbumId: number;
-  private currentVideoId: number;
-  private currentSlideshowId: number;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.users = new Map();
-    this.membershipRequests = new Map();
-    this.activeMemberships = new Map();
-    this.celebrities = new Map();
-    this.albums = new Map();
-    this.videos = new Map();
-    this.slideshowImages = new Map();
-    this.currentUserId = 1;
-    this.currentRequestId = 1;
-    this.currentMembershipId = 1;
-    this.currentCelebrityId = 1;
-    this.currentAlbumId = 1;
-    this.currentVideoId = 1;
-    this.currentSlideshowId = 1;
-    
     this.initializeData();
   }
 
-  private initializeData() {
-    // Create admin user
-    const adminUser: User = {
-      id: this.currentUserId++,
-      username: "sohaghasunbd@gmail.com",
-      password: "sohagq301",
-      firstName: "Admin",
-      lastName: "User",
-      email: "sohaghasunbd@gmail.com",
-      dateOfBirth: "1990-01-01",
-      contactNumber: "+1234567890",
-      role: "admin",
-      createdAt: new Date(),
-    };
-    this.users.set(adminUser.id, adminUser);
+  private async initializeData() {
+    try {
+      // Check if admin user already exists
+      const adminUser = await this.getUserByUsername("sohaghasunbd@gmail.com");
+      if (!adminUser) {
+        // Create admin user
+        await db.insert(users).values({
+          username: "sohaghasunbd@gmail.com",
+          password: "sohagq301",
+          firstName: "Admin",
+          lastName: "User",
+          email: "sohaghasunbd@gmail.com",
+          dateOfBirth: "1990-01-01",
+          contactNumber: "+1234567890",
+          role: "admin",
+        });
 
-    // Initialize sample celebrities
-    const sampleCelebrities: Celebrity[] = [
-      {
-        id: this.currentCelebrityId++,
-        name: "Sarah Johnson",
-        profession: "Model & Influencer",
-        imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
-        description: "Professional model and social media influencer",
-        isFree: false,
-        price: "25.00",
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentCelebrityId++,
-        name: "Emma Davis",
-        profession: "Fashion Model",
-        imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-        description: "International fashion model",
-        isFree: false,
-        price: "30.00",
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentCelebrityId++,
-        name: "Lisa Chen",
-        profession: "Celebrity",
-        imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-        description: "Celebrity and entertainment personality",
-        isFree: false,
-        price: "35.00",
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentCelebrityId++,
-        name: "Maya Rodriguez",
-        profession: "Influencer",
-        imageUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b77c?w=400&h=400&fit=crop",
-        description: "Social media influencer and content creator",
-        isFree: false,
-        price: "20.00",
-        createdAt: new Date(),
-      },
-    ];
-    sampleCelebrities.forEach(celebrity => this.celebrities.set(celebrity.id, celebrity));
+        // Initialize sample data only if it doesn't exist
+        const existingCelebrities = await db.select().from(celebrities);
+        if (existingCelebrities.length === 0) {
+          // Initialize sample celebrities
+          await db.insert(celebrities).values([
+            {
+              name: "Sarah Johnson",
+              profession: "Model & Influencer",
+              imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop",
+              description: "Professional model and social media influencer",
+              isFree: false,
+              price: "25.00",
+            },
+            {
+              name: "Emma Davis",
+              profession: "Fashion Model",
+              imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+              description: "International fashion model",
+              isFree: false,
+              price: "30.00",
+            },
+            {
+              name: "Lisa Chen",
+              profession: "Celebrity",
+              imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+              description: "Celebrity and entertainment personality",
+              isFree: false,
+              price: "35.00",
+            },
+            {
+              name: "Maya Rodriguez",
+              profession: "Influencer",
+              imageUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b77c?w=400&h=400&fit=crop",
+              description: "Social media influencer and content creator",
+              isFree: false,
+              price: "20.00",
+            },
+          ]);
 
-    // Initialize sample albums
-    const sampleAlbums: Album[] = [
-      {
-        id: this.currentAlbumId++,
-        title: "Glamour Collection",
-        description: "Exclusive high-fashion photography collection with 25+ premium images",
-        imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=400&fit=crop",
-        price: "15.00",
-        imageCount: 25,
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentAlbumId++,
-        title: "Portrait Masters",
-        description: "Professional portrait collection featuring top models and celebrities",
-        imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=400&fit=crop",
-        price: "20.00",
-        imageCount: 30,
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentAlbumId++,
-        title: "Lifestyle Luxury",
-        description: "Premium lifestyle photography capturing authentic moments and beauty",
-        imageUrl: "https://images.unsplash.com/photo-1488716820095-cbe80883c496?w=600&h=400&fit=crop",
-        price: "25.00",
-        imageCount: 35,
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-    ];
-    sampleAlbums.forEach(album => this.albums.set(album.id, album));
+          // Initialize sample albums
+          await db.insert(albums).values([
+            {
+              title: "Glamour Collection",
+              description: "Exclusive high-fashion photography collection with 25+ premium images",
+              imageUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=400&fit=crop",
+              price: "15.00",
+              imageCount: 25,
+              isFeatured: true,
+            },
+            {
+              title: "Portrait Masters",
+              description: "Professional portrait collection featuring top models and celebrities",
+              imageUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=400&fit=crop",
+              price: "20.00",
+              imageCount: 30,
+              isFeatured: true,
+            },
+            {
+              title: "Lifestyle Luxury",
+              description: "Premium lifestyle photography capturing authentic moments and beauty",
+              imageUrl: "https://images.unsplash.com/photo-1488716820095-cbe80883c496?w=600&h=400&fit=crop",
+              price: "25.00",
+              imageCount: 35,
+              isFeatured: true,
+            },
+          ]);
 
-    // Initialize sample videos
-    const sampleVideos: Video[] = [
-      {
-        id: this.currentVideoId++,
-        title: "Behind the Scenes",
-        description: "Exclusive behind-the-scenes footage from premium photo shoots",
-        thumbnailUrl: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=400&fit=crop",
-        videoUrl: "https://example.com/video1.mp4",
-        price: "30.00",
-        duration: "15:30",
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentVideoId++,
-        title: "Studio Sessions",
-        description: "Professional studio sessions with top models and celebrities",
-        thumbnailUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop",
-        videoUrl: "https://example.com/video2.mp4",
-        price: "35.00",
-        duration: "22:15",
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentVideoId++,
-        title: "Fashion Shows",
-        description: "Exclusive coverage of high-fashion runway shows and events",
-        thumbnailUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=400&fit=crop",
-        videoUrl: "https://example.com/video3.mp4",
-        price: "40.00",
-        duration: "28:45",
-        isFeatured: true,
-        createdAt: new Date(),
-      },
-    ];
-    sampleVideos.forEach(video => this.videos.set(video.id, video));
+          // Initialize sample videos
+          await db.insert(videos).values([
+            {
+              title: "Behind the Scenes",
+              description: "Exclusive behind-the-scenes footage from premium photo shoots",
+              thumbnailUrl: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=400&fit=crop",
+              videoUrl: "https://example.com/video1.mp4",
+              price: "30.00",
+              duration: "15:30",
+              isFeatured: true,
+            },
+            {
+              title: "Studio Sessions",
+              description: "Professional studio sessions with top models and celebrities",
+              thumbnailUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop",
+              videoUrl: "https://example.com/video2.mp4",
+              price: "35.00",
+              duration: "22:15",
+              isFeatured: true,
+            },
+            {
+              title: "Fashion Shows",
+              description: "Exclusive coverage of high-fashion runway shows and events",
+              thumbnailUrl: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=400&fit=crop",
+              videoUrl: "https://example.com/video3.mp4",
+              price: "40.00",
+              duration: "28:45",
+              isFeatured: true,
+            },
+          ]);
 
-    // Initialize slideshow images
-    const sampleSlideshowImages: SlideshowImage[] = [
-      {
-        id: this.currentSlideshowId++,
-        imageUrl: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1920&h=800&fit=crop",
-        title: "Premium Content Awaits",
-        subtitle: "Exclusive access to high-quality digital content",
-        order: 1,
-        isActive: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentSlideshowId++,
-        imageUrl: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1920&h=800&fit=crop",
-        title: "Luxury Experience",
-        subtitle: "Discover premium content like never before",
-        order: 2,
-        isActive: true,
-        createdAt: new Date(),
-      },
-      {
-        id: this.currentSlideshowId++,
-        imageUrl: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1920&h=800&fit=crop",
-        title: "Digital Excellence",
-        subtitle: "Where technology meets premium content",
-        order: 3,
-        isActive: true,
-        createdAt: new Date(),
-      },
-    ];
-    sampleSlideshowImages.forEach(image => this.slideshowImages.set(image.id, image));
+          // Initialize slideshow images
+          await db.insert(slideshowImages).values([
+            {
+              imageUrl: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1920&h=800&fit=crop",
+              title: "Premium Content Awaits",
+              subtitle: "Exclusive access to high-quality digital content",
+              order: 1,
+              isActive: true,
+            },
+            {
+              imageUrl: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1920&h=800&fit=crop",
+              title: "Luxury Experience",
+              subtitle: "Discover premium content like never before",
+              order: 2,
+              isActive: true,
+            },
+            {
+              imageUrl: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1920&h=800&fit=crop",
+              title: "Digital Excellence",
+              subtitle: "Where technology meets premium content",
+              order: 3,
+              isActive: true,
+            },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error("Error initializing data:", error);
+    }
   }
 
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const user: User = {
+    const [user] = await db.insert(users).values({
       ...insertUser,
-      id: this.currentUserId++,
       role: "user",
-      createdAt: new Date(),
-    };
-    this.users.set(user.id, user);
+    }).returning();
     return user;
   }
 
   // Membership operations
   async createMembershipRequest(insertRequest: InsertMembershipRequest): Promise<MembershipRequest> {
-    const request: MembershipRequest = {
+    const [request] = await db.insert(membershipRequests).values({
       ...insertRequest,
-      id: this.currentRequestId++,
       status: "pending",
-      createdAt: new Date(),
-      approvedAt: null,
-    };
-    this.membershipRequests.set(request.id, request);
+    }).returning();
     return request;
   }
 
   async getMembershipRequests(): Promise<MembershipRequest[]> {
-    return Array.from(this.membershipRequests.values());
+    return await db.select().from(membershipRequests);
   }
 
   async getMembershipRequestById(id: number): Promise<MembershipRequest | undefined> {
-    return this.membershipRequests.get(id);
+    const [request] = await db.select().from(membershipRequests).where(eq(membershipRequests.id, id));
+    return request || undefined;
   }
 
   async updateMembershipRequestStatus(id: number, status: string): Promise<void> {
-    const request = this.membershipRequests.get(id);
-    if (request) {
-      request.status = status;
-      if (status === "approved") {
-        request.approvedAt = new Date();
+    const updateData: any = { status };
+    if (status === "approved") {
+      updateData.approvedAt = new Date();
+    }
+    
+    await db.update(membershipRequests)
+      .set(updateData)
+      .where(eq(membershipRequests.id, id));
+
+    if (status === "approved") {
+      const request = await this.getMembershipRequestById(id);
+      if (request) {
         // Create active membership
         const expiresAt = new Date();
         switch (request.plan) {
@@ -337,102 +292,84 @@ export class MemStorage implements IStorage {
 
   // Active membership operations
   async getActiveMembershipByUserId(userId: number): Promise<ActiveMembership | undefined> {
-    return Array.from(this.activeMemberships.values()).find(
-      membership => membership.userId === userId && membership.expiresAt > new Date()
-    );
+    const [membership] = await db.select().from(activeMemberships)
+      .where(eq(activeMemberships.userId, userId));
+    
+    if (membership && membership.expiresAt > new Date()) {
+      return membership;
+    }
+    return undefined;
   }
 
   async createActiveMembership(membership: { userId: number; plan: string; expiresAt: Date }): Promise<ActiveMembership> {
-    const activeMembership: ActiveMembership = {
-      ...membership,
-      id: this.currentMembershipId++,
-      createdAt: new Date(),
-    };
-    this.activeMemberships.set(activeMembership.id, activeMembership);
+    const [activeMembership] = await db.insert(activeMemberships).values(membership).returning();
     return activeMembership;
   }
 
   // Celebrity operations
   async getCelebrities(): Promise<Celebrity[]> {
-    return Array.from(this.celebrities.values());
+    return await db.select().from(celebrities);
   }
 
   async getCelebrityById(id: number): Promise<Celebrity | undefined> {
-    return this.celebrities.get(id);
+    const [celebrity] = await db.select().from(celebrities).where(eq(celebrities.id, id));
+    return celebrity || undefined;
   }
 
   async createCelebrity(insertCelebrity: InsertCelebrity): Promise<Celebrity> {
-    const celebrity: Celebrity = {
-      ...insertCelebrity,
-      id: this.currentCelebrityId++,
-      createdAt: new Date(),
-    };
-    this.celebrities.set(celebrity.id, celebrity);
+    const [celebrity] = await db.insert(celebrities).values(insertCelebrity).returning();
     return celebrity;
   }
 
   // Album operations
   async getAlbums(): Promise<Album[]> {
-    return Array.from(this.albums.values());
+    return await db.select().from(albums);
   }
 
   async getFeaturedAlbums(): Promise<Album[]> {
-    return Array.from(this.albums.values()).filter(album => album.isFeatured);
+    return await db.select().from(albums).where(eq(albums.isFeatured, true));
   }
 
   async getAlbumById(id: number): Promise<Album | undefined> {
-    return this.albums.get(id);
+    const [album] = await db.select().from(albums).where(eq(albums.id, id));
+    return album || undefined;
   }
 
   async createAlbum(insertAlbum: InsertAlbum): Promise<Album> {
-    const album: Album = {
-      ...insertAlbum,
-      id: this.currentAlbumId++,
-      createdAt: new Date(),
-    };
-    this.albums.set(album.id, album);
+    const [album] = await db.insert(albums).values(insertAlbum).returning();
     return album;
   }
 
   // Video operations
   async getVideos(): Promise<Video[]> {
-    return Array.from(this.videos.values());
+    return await db.select().from(videos);
   }
 
   async getFeaturedVideos(): Promise<Video[]> {
-    return Array.from(this.videos.values()).filter(video => video.isFeatured);
+    return await db.select().from(videos).where(eq(videos.isFeatured, true));
   }
 
   async getVideoById(id: number): Promise<Video | undefined> {
-    return this.videos.get(id);
+    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    return video || undefined;
   }
 
   async createVideo(insertVideo: InsertVideo): Promise<Video> {
-    const video: Video = {
-      ...insertVideo,
-      id: this.currentVideoId++,
-      createdAt: new Date(),
-    };
-    this.videos.set(video.id, video);
+    const [video] = await db.insert(videos).values(insertVideo).returning();
     return video;
   }
 
   // Slideshow operations
   async getSlideshowImages(): Promise<SlideshowImage[]> {
-    return Array.from(this.slideshowImages.values())
-      .filter(image => image.isActive)
-      .sort((a, b) => a.order - b.order);
+    return await db.select().from(slideshowImages)
+      .where(eq(slideshowImages.isActive, true))
+      .orderBy(slideshowImages.order);
   }
 
   async createSlideshowImage(insertImage: InsertSlideshowImage): Promise<SlideshowImage> {
-    const image: SlideshowImage = {
-      ...insertImage,
-      id: this.currentSlideshowId++,
-      createdAt: new Date(),
-    };
-    this.slideshowImages.set(image.id, image);
+    const [image] = await db.insert(slideshowImages).values(insertImage).returning();
     return image;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
