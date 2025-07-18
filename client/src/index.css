@@ -3,52 +3,52 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(210, 11%, 7%);
-  --foreground: hsl(120, 100%, 85%);
-  --muted: hsl(210, 15%, 12%);
-  --muted-foreground: hsl(120, 15%, 65%);
-  --popover: hsl(210, 15%, 8%);
-  --popover-foreground: hsl(120, 100%, 85%);
-  --card: hsl(210, 15%, 8%);
-  --card-foreground: hsl(120, 100%, 85%);
-  --border: hsl(120, 50%, 25%);
-  --input: hsl(210, 15%, 12%);
-  --primary: hsl(120, 100%, 40%);
-  --primary-dark: hsl(120, 100%, 30%);
-  --primary-light: hsl(120, 100%, 50%);
-  --primary-foreground: hsl(210, 11%, 7%);
-  --secondary: hsl(165, 70%, 35%);
-  --secondary-foreground: hsl(210, 11%, 7%);
-  --accent: hsl(120, 100%, 50%);
-  --accent-foreground: hsl(210, 11%, 7%);
+  --background: hsl(221, 41%, 8%);
+  --foreground: hsl(152, 100%, 75%);
+  --muted: hsl(221, 39%, 11%);
+  --muted-foreground: hsl(152, 15%, 65%);
+  --popover: hsl(221, 39%, 11%);
+  --popover-foreground: hsl(152, 100%, 75%);
+  --card: hsl(221, 39%, 11%);
+  --card-foreground: hsl(152, 100%, 75%);
+  --border: hsl(152, 50%, 25%);
+  --input: hsl(221, 39%, 11%);
+  --primary: hsl(152, 100%, 50%);
+  --primary-dark: hsl(152, 100%, 30%);
+  --primary-light: hsl(152, 100%, 60%);
+  --primary-foreground: hsl(221, 41%, 8%);
+  --secondary: hsl(162, 73%, 58%);
+  --secondary-foreground: hsl(221, 41%, 8%);
+  --accent: hsl(152, 100%, 50%);
+  --accent-foreground: hsl(221, 41%, 8%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(120, 100%, 40%);
+  --ring: hsl(152, 100%, 50%);
   --radius: 0.75rem;
 }
 
 .dark {
-  --background: hsl(210, 11%, 7%);
-  --foreground: hsl(120, 100%, 85%);
-  --muted: hsl(210, 15%, 12%);
-  --muted-foreground: hsl(120, 15%, 65%);
-  --popover: hsl(210, 15%, 8%);
-  --popover-foreground: hsl(120, 100%, 85%);
-  --card: hsl(210, 15%, 8%);
-  --card-foreground: hsl(120, 100%, 85%);
-  --border: hsl(120, 50%, 25%);
-  --input: hsl(210, 15%, 12%);
-  --primary: hsl(120, 100%, 40%);
-  --primary-dark: hsl(120, 100%, 30%);
-  --primary-light: hsl(120, 100%, 50%);
-  --primary-foreground: hsl(210, 11%, 7%);
-  --secondary: hsl(165, 70%, 35%);
-  --secondary-foreground: hsl(210, 11%, 7%);
-  --accent: hsl(120, 100%, 50%);
-  --accent-foreground: hsl(210, 11%, 7%);
+  --background: hsl(221, 41%, 8%);
+  --foreground: hsl(152, 100%, 75%);
+  --muted: hsl(221, 39%, 11%);
+  --muted-foreground: hsl(152, 15%, 65%);
+  --popover: hsl(221, 39%, 11%);
+  --popover-foreground: hsl(152, 100%, 75%);
+  --card: hsl(221, 39%, 11%);
+  --card-foreground: hsl(152, 100%, 75%);
+  --border: hsl(152, 50%, 25%);
+  --input: hsl(221, 39%, 11%);
+  --primary: hsl(152, 100%, 50%);
+  --primary-dark: hsl(152, 100%, 30%);
+  --primary-light: hsl(152, 100%, 60%);
+  --primary-foreground: hsl(221, 41%, 8%);
+  --secondary: hsl(162, 73%, 58%);
+  --secondary-foreground: hsl(221, 41%, 8%);
+  --accent: hsl(152, 100%, 50%);
+  --accent-foreground: hsl(221, 41%, 8%);
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(120, 100%, 40%);
+  --ring: hsl(152, 100%, 50%);
   --radius: 0.75rem;
 }
 
@@ -87,12 +87,41 @@
   .cyber-button {
     @apply bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 
            text-black font-semibold px-6 py-3 rounded-lg transition-all duration-300 
-           shadow-lg hover:shadow-green-500/25 border border-green-400/50;
+           shadow-lg hover:shadow-green-500/40 border border-green-400/50 
+           hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] hover:border-green-400/80;
   }
 
   .cyber-input {
     @apply bg-gray-900/50 border border-green-500/30 text-green-100 placeholder-green-300/50 
-           focus:border-green-400 focus:ring-green-400/30 rounded-lg backdrop-blur-sm;
+           focus:border-green-400 focus:ring-green-400/30 rounded-lg backdrop-blur-sm
+           focus:shadow-[0_0_10px_rgba(16,185,129,0.3)] transition-all duration-300;
+  }
+
+  .glow-button {
+    @apply bg-gradient-to-r from-primary to-secondary hover:from-primary-light hover:to-secondary
+           text-primary-foreground font-semibold px-6 py-3 rounded-lg transition-all duration-300
+           shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] border border-primary/50
+           hover:border-primary/80 hover:scale-105;
+  }
+
+  .glow-card {
+    @apply bg-card backdrop-blur-sm border border-green-500/20 rounded-xl p-6 
+           transition-all duration-300 hover:border-green-400/40
+           hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:scale-[1.02];
+  }
+
+  .admin-button {
+    @apply bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500
+           text-white font-medium px-4 py-2 rounded-lg transition-all duration-300
+           shadow-md hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] border border-emerald-500/50
+           hover:border-emerald-400/80 hover:scale-105;
+  }
+
+  .admin-button-danger {
+    @apply bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600
+           text-white font-medium px-4 py-2 rounded-lg transition-all duration-300
+           shadow-md hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] border border-red-500/50
+           hover:border-red-400/80 hover:scale-105;
   }
 
   .slide-enter {
@@ -134,11 +163,14 @@
   }
 
   .admin-nav-item {
-    @apply flex items-center px-4 py-3 text-green-300 hover:bg-green-600/20 hover:text-green-100 rounded-lg transition-colors duration-200 border border-transparent hover:border-green-500/30;
+    @apply flex items-center px-4 py-3 text-green-300 hover:bg-green-600/20 hover:text-green-100 
+           rounded-lg transition-all duration-300 border border-transparent hover:border-green-500/30
+           hover:shadow-[0_0_10px_rgba(16,185,129,0.3)] hover:scale-105;
   }
 
   .admin-nav-item.active {
-    @apply bg-green-600/30 text-green-100 border-green-500/50;
+    @apply bg-green-600/30 text-green-100 border-green-500/50 
+           shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-105;
   }
 
   .premium-card {
@@ -152,9 +184,16 @@
 
   .matrix-bg {
     background-image: 
-      radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
+      radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(52, 211, 153, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 50%);
+  }
+
+  .stats-card {
+    @apply bg-gradient-to-br from-gray-900/80 to-gray-800/40 backdrop-blur-sm 
+           border border-green-500/30 rounded-xl p-6 transition-all duration-300
+           hover:border-green-400/50 hover:shadow-[0_0_25px_rgba(16,185,129,0.3)]
+           hover:scale-105;
   }
 }
 
