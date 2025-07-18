@@ -27,14 +27,14 @@ export function CelebritySection() {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="celebrity-grid">
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="animate-pulse">
-                <div className="aspect-square bg-gray-200 rounded-full mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-3/4 mx-auto"></div>
+                <div className="aspect-square bg-green-950/30 rounded-xl mb-4 cyber-border"></div>
+                <div className="h-4 bg-green-950/30 rounded mb-2"></div>
+                <div className="h-3 bg-green-950/30 rounded w-3/4 mx-auto"></div>
               </div>
             ))}
           </div>
@@ -45,13 +45,15 @@ export function CelebritySection() {
 
   return (
     <>
-      <section id="celebrity" className="py-16 bg-white">
+      <section id="celebrity" className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-4xl font-bold text-gray-800">Celebrity Collection</h2>
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent neon-text">
+              ⭐ Celebrity Collection
+            </h2>
             <Link href="/celebrities">
-              <Button variant="ghost" className="text-primary hover:text-primary-dark font-semibold">
-                See All <ArrowRight className="ml-2 w-4 h-4" />
+              <Button className="glass-button">
+                Access All <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -60,18 +62,18 @@ export function CelebritySection() {
             {celebrities.slice(0, 4).map((celebrity) => (
               <Card
                 key={celebrity.id}
-                className="group cursor-pointer card-hover bg-white border-0 shadow-lg"
+                className="group cursor-pointer card-hover premium-card"
                 onClick={() => handleCelebrityClick(celebrity)}
               >
                 <CardContent className="p-0">
-                  <div className="relative overflow-hidden rounded-t-lg aspect-square">
+                  <div className="relative overflow-hidden rounded-xl aspect-square">
                     <img
                       src={celebrity.imageUrl}
                       alt={celebrity.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <div className="absolute inset-0 bg-gradient-to-t from-green-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute bottom-4 left-4 right-4 text-green-100">
                         <div className="flex items-center justify-between">
                           <p className="font-semibold">
                             {celebrity.isFree ? "Free Access" : "Premium Access"}
@@ -87,10 +89,22 @@ export function CelebritySection() {
                     </div>
                   </div>
                   <div className="p-4 text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    <h3 className="text-lg font-semibold text-green-100 mb-1">
                       {celebrity.name}
                     </h3>
-                    <p className="text-sm text-gray-600">{celebrity.profession}</p>
+                    <p className="text-sm text-green-300/70">{celebrity.profession}</p>
+                    <div className="mt-3 flex items-center justify-center space-x-2">
+                      {celebrity.isFree ? (
+                        <span className="text-xs px-2 py-1 bg-green-600/30 text-green-300 rounded-full border border-green-500/50">
+                          Free Access
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-1 bg-amber-600/30 text-amber-300 rounded-full border border-amber-500/50 flex items-center">
+                          <Lock className="w-3 h-3 mr-1" />
+                          ${celebrity.price}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

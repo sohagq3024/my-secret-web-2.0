@@ -32,15 +32,19 @@ export function Slideshow() {
 
   if (isLoading || slides.length === 0) {
     return (
-      <section className="relative h-96 bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-5xl font-bold mb-4">Premium Content Awaits</h2>
-          <p className="text-xl mb-8">Exclusive access to high-quality digital content</p>
+      <section className="relative h-[70vh] hero-gradient flex items-center justify-center">
+        <div className="absolute inset-0 matrix-bg"></div>
+        <div className="relative text-center text-green-100 z-10">
+          <h2 className="text-6xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent neon-text">
+            Premium Content Awaits
+          </h2>
+          <p className="text-xl mb-8 text-green-300/80">Exclusive access to encrypted digital content</p>
           <Button
             onClick={handleGetStarted}
-            className="px-8 py-3 bg-white text-primary hover:bg-gray-100 hover:shadow-xl hover:scale-105 transition-all duration-300"
+            className="cyber-button text-lg px-10 py-4 hover:shadow-green-500/25"
           >
-            Get Started
+            <span className="mr-2">🔓</span>
+            Access Portal
           </Button>
         </div>
       </section>
@@ -49,30 +53,34 @@ export function Slideshow() {
 
   return (
     <>
-      <section className="relative h-96 overflow-hidden">
+      <section className="relative h-[70vh] overflow-hidden">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-500 ${
+            className={`absolute inset-0 transition-opacity duration-1000 ${
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
           >
             <div
               className="w-full h-full bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${slide.imageUrl})`,
+                backgroundImage: `linear-gradient(rgba(17, 24, 39, 0.7), rgba(6, 78, 59, 0.5)), url(${slide.imageUrl})`,
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <h2 className="text-5xl font-bold mb-4">{slide.title}</h2>
-                  <p className="text-xl mb-8">{slide.subtitle}</p>
+              <div className="absolute inset-0 matrix-bg"></div>
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="text-center text-green-100">
+                  <h2 className="text-6xl font-bold mb-4 bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent neon-text">
+                    {slide.title}
+                  </h2>
+                  <p className="text-xl mb-8 text-green-300/80">{slide.subtitle}</p>
                   {index === currentSlide && (
                     <Button
                       onClick={handleGetStarted}
-                      className="px-8 py-3 gradient-primary text-white hover:shadow-xl hover:scale-105 transition-all duration-300"
+                      className="cyber-button text-lg px-10 py-4 hover:shadow-green-500/25"
                     >
-                      Get Started
+                      <span className="mr-2">🔓</span>
+                      Access Portal
                     </Button>
                   )}
                 </div>
