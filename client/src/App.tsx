@@ -12,6 +12,9 @@ import { AllAlbums } from "@/pages/AllAlbums";
 import { AllVideos } from "@/pages/AllVideos";
 import { ContentViewer } from "@/pages/ContentViewer";
 import { AdminPanel } from "@/components/AdminPanel";
+import AlbumDetails from "@/pages/AlbumDetails";
+import VideoDetails from "@/pages/VideoDetails";
+import ProfileDetails from "@/pages/ProfileDetails";
 
 function Router() {
   return (
@@ -24,6 +27,9 @@ function Router() {
           <Route path="/albums" component={AllAlbums} />
           <Route path="/videos" component={AllVideos} />
           <Route path="/admin" component={AdminPanel} />
+          <Route path="/album/:id" component={AlbumDetails} />
+          <Route path="/video/:id" component={VideoDetails} />
+          <Route path="/profile/:id" component={ProfileDetails} />
           <Route path="/content/:type/:id" component={ContentViewer} />
           <Route component={NotFound} />
         </Switch>

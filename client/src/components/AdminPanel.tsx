@@ -43,6 +43,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { MembershipRequest, Celebrity, Album as AlbumType, Video as VideoType, SlideshowImage, Profile } from "@shared/schema";
+import { EnhancedAlbumManagement } from "./EnhancedAlbumManagement";
+import { EnhancedVideoManagement } from "./EnhancedVideoManagement";
 import { ProfileManagement } from "./ProfileManagement";
 import { AlbumManagement } from "./AlbumManagement";
 
@@ -53,6 +55,8 @@ export function AdminPanel() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProfileManagementOpen, setIsProfileManagementOpen] = useState(false);
   const [isAlbumManagementOpen, setIsAlbumManagementOpen] = useState(false);
+  const [isEnhancedAlbumManagementOpen, setIsEnhancedAlbumManagementOpen] = useState(false);
+  const [isEnhancedVideoManagementOpen, setIsEnhancedVideoManagementOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
@@ -836,14 +840,22 @@ export function AdminPanel() {
               >
                 <div className="flex justify-between items-center mb-8">
                   <h1 className="text-3xl font-bold text-foreground">Album Management</h1>
-                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="admin-button">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Album
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-card border-green-500/20">
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => setIsEnhancedAlbumManagementOpen(true)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Enhanced Album Manager
+                    </Button>
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="admin-button">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Quick Add Album
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card border-green-500/20">
                       <DialogHeader>
                         <DialogTitle className="text-foreground">Add Album</DialogTitle>
                       </DialogHeader>
@@ -913,8 +925,9 @@ export function AdminPanel() {
                           </Button>
                         </div>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -982,14 +995,22 @@ export function AdminPanel() {
               >
                 <div className="flex justify-between items-center mb-8">
                   <h1 className="text-3xl font-bold text-foreground">Video Management</h1>
-                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="admin-button">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Video
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-card border-green-500/20">
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => setIsEnhancedVideoManagementOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Enhanced Video Manager
+                    </Button>
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="admin-button">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Quick Add Video
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card border-green-500/20">
                       <DialogHeader>
                         <DialogTitle className="text-foreground">Add Video</DialogTitle>
                       </DialogHeader>
@@ -1067,8 +1088,9 @@ export function AdminPanel() {
                           </Button>
                         </div>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1537,6 +1559,18 @@ export function AdminPanel() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Enhanced Album Management Dialog */}
+      <EnhancedAlbumManagement 
+        isOpen={isEnhancedAlbumManagementOpen} 
+        onOpenChange={setIsEnhancedAlbumManagementOpen} 
+      />
+
+      {/* Enhanced Video Management Dialog */}
+      <EnhancedVideoManagement 
+        isOpen={isEnhancedVideoManagementOpen} 
+        onOpenChange={setIsEnhancedVideoManagementOpen} 
+      />
     </div>
   );
 }
