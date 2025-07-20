@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   BarChart3, 
   Users, 
@@ -37,7 +37,9 @@ import {
   AlertCircle,
   Shield,
   Database,
-  FileText
+  FileText,
+  ImagePlus,
+  Eye
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -47,6 +49,7 @@ import { EnhancedAlbumManagement } from "./EnhancedAlbumManagement";
 import { EnhancedVideoManagement } from "./EnhancedVideoManagement";
 import { ProfileManagement } from "./ProfileManagement";
 import { AlbumManagement } from "./AlbumManagement";
+import { uploadFile, validateImageFile, UploadedFile } from "@/lib/fileUpload";
 
 export function AdminPanel() {
   const { user, logout } = useAuth();
@@ -61,6 +64,10 @@ export function AdminPanel() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
+  const [uploadedImage, setUploadedImage] = useState<UploadedFile | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Data queries
   const { data: membershipRequests = [], isLoading: requestsLoading } = useQuery<(MembershipRequest & { user: any })[]>({
@@ -199,8 +206,71 @@ export function AdminPanel() {
   const resetForm = () => {
     setFormData({});
     setSelectedItem(null);
+    setUploadedImage(null);
+    setImagePreview(null);
     setIsAddDialogOpen(false);
     setIsEditDialogOpen(false);
+  };
+
+  // Image upload handlers
+  const handleImageUpload = async (file: File) => {
+    if (!validateImageFile(file)) {
+      toast({
+        title: "Invalid file",
+        description: "Please upload a valid image file (JPG, JPEG, PNG, WEBP) under 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const uploadedFile = await uploadFile(file);
+      setUploadedImage(uploadedFile);
+      setImagePreview(uploadedFile.preview || uploadedFile.url);
+      setFormData({ ...formData, imageUrl: uploadedFile.url });
+      
+      toast({
+        title: "Image uploaded",
+        description: "Image has been uploaded successfully!",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragging(false);
+    
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+      handleImageUpload(files[0]);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   // Stats calculations
@@ -539,7 +609,7 @@ export function AdminPanel() {
                                 <td className="p-4">
                                   <div className="flex items-center text-muted-foreground">
                                     <Calendar className="w-4 h-4 mr-2" />
-                                    {new Date(request.createdAt).toLocaleDateString()}
+                                    {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}
                                   </div>
                                 </td>
                                 <td className="p-4">
@@ -594,53 +664,115 @@ export function AdminPanel() {
                         Add Image
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-card border-green-500/20">
+                    <DialogContent className="bg-card border-green-500/20 max-w-md sm:max-w-lg">
                       <DialogHeader>
                         <DialogTitle className="text-foreground">Add Slideshow Image</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label className="text-foreground">Image URL</Label>
-                          <Input
-                            className="cyber-input"
-                            placeholder="https://example.com/image.jpg"
-                            value={formData.imageUrl || ""}
-                            onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
-                          />
+                      <div className="space-y-6">
+                        {/* Image Upload Section */}
+                        <div className="space-y-4">
+                          <Label className="text-foreground font-medium">Upload Image</Label>
+                          
+                          {/* File Upload Area */}
+                          <div
+                            className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer ${
+                              isDragging 
+                                ? "border-green-500 bg-green-500/10" 
+                                : "border-gray-300 hover:border-green-400 hover:bg-green-400/5"
+                            }`}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={triggerFileInput}
+                          >
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept=".jpg,.jpeg,.png,.webp"
+                              onChange={handleFileInputChange}
+                              className="hidden"
+                            />
+                            
+                            {imagePreview ? (
+                              <div className="space-y-4">
+                                <div className="relative">
+                                  <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  <div className="absolute top-2 right-2">
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setImagePreview(null);
+                                        setUploadedImage(null);
+                                        setFormData({...formData, imageUrl: ""});
+                                      }}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                <p className="text-sm text-green-600">✓ Image uploaded successfully</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <ImagePlus className="w-12 h-12 mx-auto text-gray-400" />
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    Drop your image here or click to browse
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Supports JPG, JPEG, PNG, WEBP (Max 10MB)
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-foreground">Title</Label>
-                          <Input
-                            className="cyber-input"
-                            placeholder="Image title"
-                            value={formData.title || ""}
-                            onChange={(e) => setFormData({...formData, title: e.target.value})}
-                          />
+
+                        {/* Form Fields */}
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-foreground">Title</Label>
+                            <Input
+                              className="cyber-input"
+                              placeholder="Image title"
+                              value={formData.title || ""}
+                              onChange={(e) => setFormData({...formData, title: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-foreground">Subtitle</Label>
+                            <Input
+                              className="cyber-input"
+                              placeholder="Image subtitle"
+                              value={formData.subtitle || ""}
+                              onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-foreground">Display Order</Label>
+                            <Input
+                              className="cyber-input"
+                              type="number"
+                              placeholder="1"
+                              value={formData.order || ""}
+                              onChange={(e) => setFormData({...formData, order: parseInt(e.target.value)})}
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <Label className="text-foreground">Subtitle</Label>
-                          <Input
-                            className="cyber-input"
-                            placeholder="Image subtitle"
-                            value={formData.subtitle || ""}
-                            onChange={(e) => setFormData({...formData, subtitle: e.target.value})}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-foreground">Order</Label>
-                          <Input
-                            className="cyber-input"
-                            type="number"
-                            placeholder="1"
-                            value={formData.order || ""}
-                            onChange={(e) => setFormData({...formData, order: parseInt(e.target.value)})}
-                          />
-                        </div>
-                        <div className="flex justify-end space-x-2">
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end space-x-2 pt-4">
                           <Button variant="outline" onClick={resetForm}>Cancel</Button>
                           <Button 
                             className="admin-button"
                             onClick={() => handleCreate("/api/admin/slideshow", formData)}
+                            disabled={!imagePreview || !formData.title}
                           >
                             <Save className="w-4 h-4 mr-2" />
                             Add Image
@@ -938,7 +1070,7 @@ export function AdminPanel() {
                       className="glow-card"
                     >
                       <img 
-                        src={album.imageUrl} 
+                        src={album.thumbnailUrl} 
                         alt={album.title}
                         className="w-full h-48 object-cover rounded-lg mb-4"
                       />
