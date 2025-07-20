@@ -47,7 +47,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { MembershipRequest, Celebrity, Album as AlbumType, Video as VideoType, SlideshowImage, Profile } from "@shared/schema";
 import { EnhancedAlbumManagement } from "./EnhancedAlbumManagement";
 import { EnhancedVideoManagement } from "./EnhancedVideoManagement";
-import { ProfileManagement } from "./ProfileManagement";
 import { AlbumManagement } from "./AlbumManagement";
 import { uploadFile, validateImageFile, UploadedFile } from "@/lib/fileUpload";
 
@@ -1295,10 +1294,136 @@ export function AdminPanel() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <ProfileManagement 
-                  isOpen={activeTab === "profiles"} 
-                  onOpenChange={() => {}}
-                />
+                <div className="flex justify-between items-center mb-8">
+                  <h1 className="text-3xl font-bold text-foreground">Profile Management</h1>
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="admin-button">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Profile
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-card border-green-500/20 max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle className="text-foreground">Add Profile</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-foreground">Name</Label>
+                            <Input
+                              className="cyber-input"
+                              placeholder="Profile name"
+                              value={formData.name || ""}
+                              onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-foreground">Age</Label>
+                            <Input
+                              className="cyber-input"
+                              type="number"
+                              placeholder="25"
+                              value={formData.age || ""}
+                              onChange={(e) => setFormData({...formData, age: parseInt(e.target.value) || undefined})}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-foreground">Country</Label>
+                            <Input
+                              className="cyber-input"
+                              placeholder="Country"
+                              value={formData.country || ""}
+                              onChange={(e) => setFormData({...formData, country: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-foreground">Profession</Label>
+                            <Input
+                              className="cyber-input"
+                              placeholder="Profession"
+                              value={formData.profession || ""}
+                              onChange={(e) => setFormData({...formData, profession: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-foreground">Description</Label>
+                          <Textarea
+                            className="cyber-input"
+                            placeholder="Profile description"
+                            value={formData.description || ""}
+                            onChange={(e) => setFormData({...formData, description: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-foreground">Thumbnail URL</Label>
+                          <Input
+                            className="cyber-input"
+                            placeholder="https://example.com/image.jpg"
+                            value={formData.thumbnailUrl || ""}
+                            onChange={(e) => setFormData({...formData, thumbnailUrl: e.target.value})}
+                          />
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={resetForm}>Cancel</Button>
+                          <Button 
+                            className="admin-button"
+                            onClick={() => handleCreate("/api/profiles", formData)}
+                            disabled={!formData.name || !formData.description}
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Add Profile
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {profiles.map((profile) => (
+                    <motion.div
+                      key={profile.id}
+                      whileHover={{ scale: 1.02 }}
+                      className="glow-card"
+                    >
+                      <img 
+                        src={profile.thumbnailUrl} 
+                        alt={profile.name}
+                        className="w-full h-48 object-cover rounded-lg mb-4"
+                      />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{profile.name}</h3>
+                      <p className="text-muted-foreground text-sm mb-2">Age: {profile.age} • {profile.country}</p>
+                      <p className="text-muted-foreground text-sm mb-2">{profile.profession}</p>
+                      <p className="text-muted-foreground text-sm mb-4">{profile.description}</p>
+                      <div className="flex justify-between items-center">
+                        <Badge variant="outline" className="border-green-500/50">
+                          Profile
+                        </Badge>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(profile)}
+                            className="border-green-500/50 hover:bg-green-500/20"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleDelete("/api/profiles", profile.id)}
+                            className="admin-button-danger"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </motion.div>
             )}
 
